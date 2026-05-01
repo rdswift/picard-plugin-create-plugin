@@ -1,0 +1,15 @@
+uuid = "0d44fd69-3241-4315-b5ec-aa87304e4c1b"
+name = "Create Local Plugin"
+authors = ["Bob Swift"]
+description = "This plugin assists in the creation of a local plugin by preparing the plugin framework files and git repository."
+api = ['3.0']
+license = "GPL-2.0-or-later"
+license_url = "https://www.gnu.org/licenses/gpl-2.0.html"
+long_description = """
+This plugin assists in the creation of a local plugin by preparing the plugin framework files and git repository.
+It gathers some information from the user such as author, title, description, license and target directory, and
+then writes the basic framework files to the specified directory and initializes the git repository.
+"""
+categories = ["other"]
+homepage = "https://picard-plugins-user-guides.readthedocs.io/en/latest/create_plugin/user_guide.html"
+report_bugs_to = "https://github.com/rdswift/picard-plugin-create-plugin/issues"
