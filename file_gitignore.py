@@ -28,9 +28,9 @@ def write_gitignore(plugin_dir: str, name: str) -> str | None:
     """
     content = TEMPLATE.format(name=name)
     try:
-        with open(os.path.join(plugin_dir, 'README.md'), 'w', encoding='utf8') as f:
+        with open(os.path.join(plugin_dir, '.gitignore'), 'w', encoding='utf8') as f:
             f.write(content)
     except OSError as e:
-        return f"Error writing 'README.md': {e}"
+        return f"Error writing '.gitignore': {e}"
 
     return None
