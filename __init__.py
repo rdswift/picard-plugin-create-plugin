@@ -42,6 +42,7 @@ from .file_readme import write_readme
 from .git_utils import initialize_git_repo
 from .licenses import LICENSES
 from .ui_plugin_dialog import Ui_CreatePluginOptionsPage
+from .utils import is_directory_empty
 
 
 USER_GUIDE_URL = 'https://picard-plugins-user-guides.readthedocs.io/en/latest/create_plugin/user_guide.html'
@@ -253,7 +254,28 @@ class CreatePluginOptionsPage(OptionsPage):
     def validate_settings(self) -> bool:
         """Validate the provided settings before creating the plugin.
         """
-        if not os.path.isdir(self.ui.plugin_directory.text().strip()):
+        outdir = self.ui.plugin_directory.text().strip()
+        if not outdir:
+            QtWidgets.QMessageBox.warning(
+                self,
+                self.api.tr('ui.error.missing_directory', 'Missing Directory'),
+                self.api.tr('ui.error.missing_directory_message', 'No output directory specified. Please select a target directory for the plugin.'),
+            )
+            return False
+
+        outdir = os.path.normpath(outdir)
+        try:
+            os.makedirs(outdir, exist_ok=True)
+
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                self,
+                self.api.tr('ui.error.invalid_directory', 'Invalid Directory'),
+                self.api.tr('ui.error.create_directory_message', 'Unable to create the target directory.') + f"\n\nError details: {e}",
+            )
+            return False
+
+        if not os.path.isdir(outdir):
             QtWidgets.QMessageBox.warning(
                 self,
                 self.api.tr('ui.error.invalid_directory', 'Invalid Directory'),
@@ -261,11 +283,11 @@ class CreatePluginOptionsPage(OptionsPage):
             )
             return False
 
-        if os.path.exists(os.path.join(self.ui.plugin_directory.text().strip(), '.git')):
+        if not is_directory_empty(outdir):
             QtWidgets.QMessageBox.warning(
                 self,
                 self.api.tr('ui.error.invalid_directory', 'Invalid Directory'),
-                self.api.tr('ui.error.plugin_exists_message', 'The target directory already contains a git repository.'),
+                self.api.tr('ui.error.directory_not_empty_message', 'The target directory is not empty.'),
             )
             return False
 

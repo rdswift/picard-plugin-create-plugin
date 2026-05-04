@@ -1,6 +1,26 @@
 """Miscellaneous utilities for handling TOML files in the plugin creation process.
 """
 
+import os
+
+
+def is_directory_empty(directory: str) -> bool:
+    """Check if a directory is empty.
+
+    Args:
+        directory (str): Directory path to check
+
+    Returns:
+        bool: True if the directory is empty, False otherwise
+    """
+    if not os.path.isdir(directory):
+        return True
+
+    for _entry in os.scandir(directory):
+        return False
+
+    return True
+
 
 def clean_markdown_text(text: str) -> str:
     """Clean markdown text.
