@@ -1,4 +1,4 @@
-"""Miscellaneous utilities for handling TOML files in the plugin creation process.
+"""Miscellaneous utilities for the plugin creation process.
 """
 
 import os
@@ -56,7 +56,12 @@ def make_toml_string(text: str) -> str:
 
 
 def make_short_description(description: str) -> str:
-    """Create a short description from the given description.
+    """Create a short description from the given description. The short description is the first
+    paragraph of the description, truncated to 200 characters if necessary.
+
+    The description is first reformatted to accomodate lines possiblely wrapped manually, by
+    replacing line breaks with spaces, while preserving paragraph breaks. Then the first paragraph
+    is extracted and truncated if it exceeds 200 characters.
 
     Args:
         description (str): Description to convert
@@ -65,13 +70,24 @@ def make_short_description(description: str) -> str:
         str: Short description (maximum 200 characters)
     """
     separator = chr(30)  # Record separator character, unlikely to be in the text
+
     short_description = description.strip()
+
+    # normalize line breaks to \n
     short_description = short_description.replace('\r\n', '\n').replace('\r', '\n')
+
+    # replace multiple newlines with separator
     short_description = short_description.replace('\n\n', separator)
+
+    # replace single newlines with spaces
     short_description = short_description.replace('\n', ' ')
+
+    # extract first paragraph and trim whitespace
     short_description = short_description.split(separator)[0].strip()
+
     if len(short_description) > 200:
         short_description = short_description[:197] + '...'
+
     return short_description
 
 

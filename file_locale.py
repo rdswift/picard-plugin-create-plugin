@@ -1,4 +1,4 @@
-"""Plugin .gitignore file generation
+"""Plugin locale files generation
 """
 
 import os
@@ -9,14 +9,14 @@ from .utils import (
     make_toml_string,
 )
 
-TEMPLATE = '''"manifest.description" = "{short_description}"
-"manifest.long_description" = "{description}"
-"manifest.name" = "{name}"
-"message.greeting" = "Hello from the plugin!"
-'''
+# TEMPLATE = '''"manifest.description" = "{short_description}"
+# "manifest.long_description" = "{description}"
+# "manifest.name" = "{name}"
+# "message.greeting" = "Hello from the plugin!"
+# '''
 
 
-def write_locale(plugin_dir: str, name: str, description: str, base_locale: str | None) -> str | None:
+def write_locale(plugin_dir: str, name: str, description: str, base_locale: str | None, plugin_type: str) -> str | None:
     """Write the locale files.
 
     Args:
@@ -24,6 +24,7 @@ def write_locale(plugin_dir: str, name: str, description: str, base_locale: str 
         name (str): Plugin name
         description (str): Plugin description
         base_locale (str | None): Base language for translations
+        plugin_type (str): Type of plugin
 
     Returns:
         str | None: Error message or None if successful
@@ -39,11 +40,21 @@ def write_locale(plugin_dir: str, name: str, description: str, base_locale: str 
     except OSError as e:
         return f"Error creating 'locale' directory: {e}"
 
-    content = TEMPLATE.format(
-        name=make_toml_string(name),
-        short_description=make_toml_string(short_description),
-        description=make_toml_string(description),
-    )
+    lines = [
+        f'"manifest.description" = "{make_toml_string(short_description)}"',
+        f'"manifest.long_description" = "{make_toml_string(description)}"',
+        f'"manifest.name" = "{make_toml_string(name)}"',
+    ]
+
+    if plugin_type in ('basic', 'metadata'):
+        lines.append('"message.greeting" = "Hello from the plugin!"')
+
+    if plugin_type == 'action':
+        lines.append('"action.title" = "Plugin action"')
+        lines.append('"action.dialog.title" = "Plugin action"')
+        lines.append('"action.dialog.text" = "Action triggered"')
+
+    content = '\n'.join(lines) + '\n'
     locales = [code for code, _ in get_locale_list(base_locale)]
     locales.append(base_locale)
     for loc in locales:

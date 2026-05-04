@@ -144,6 +144,16 @@
        </property>
       </widget>
      </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_plugin_type">
+       <property name="text">
+        <string>label.plugin.type</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QComboBox" name="plugin_type"/>
+     </item>
     </layout>
    </item>
    <item>
@@ -348,8 +358,11 @@
   <tabstop>plugin_directory</tabstop>
   <tabstop>directory_browser</tabstop>
   <tabstop>plugin_license</tabstop>
+  <tabstop>plugin_type</tabstop>
+  <tabstop>enter_initial_commit</tabstop>
   <tabstop>tx_enabled</tabstop>
   <tabstop>base_language</tabstop>
+  <tabstop>plugin_description</tabstop>
   <tabstop>button_clear</tabstop>
   <tabstop>button_create</tabstop>
  </tabstops>

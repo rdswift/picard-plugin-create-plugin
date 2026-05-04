@@ -35,7 +35,10 @@ from picard.plugin3.categories import (
 )
 
 from .file_gitignore import write_gitignore
-from .file_init import write_init
+from .file_init import (
+    CODE_TEMPLATES,
+    write_init,
+)
 from .file_locale import write_locale
 from .file_manifest import write_manifest
 from .file_readme import write_readme
@@ -100,6 +103,10 @@ class CreatePluginOptionsPage(OptionsPage):
         for spdx_id, info in sorted(LICENSES.items(), key=lambda x: x[1]['name'].lower()):
             self.ui.plugin_license.addItem(self.api.tr(info['name']), spdx_id)
 
+        # Set up the available plugin types
+        for template_key, template_info in CODE_TEMPLATES.items():
+            self.ui.plugin_type.addItem(self.api.tr(template_info['name']), template_key)
+
         self.ui.directory_browser.clicked.connect(self.select_plugin_directory)
         self.ui.button_create.clicked.connect(self.create_plugin)
         self.ui.button_clear.clicked.connect(self.load)
@@ -127,6 +134,7 @@ class CreatePluginOptionsPage(OptionsPage):
         for i in range(self.ui.categories_section_frame.layout().count()):
             widget = self.ui.categories_section_frame.layout().itemAt(i).widget()
             widget.setChecked(False)
+        self.ui.plugin_type.setCurrentIndex(0)
 
     def save(self):
         """Save the option settings.
@@ -157,12 +165,14 @@ class CreatePluginOptionsPage(OptionsPage):
                     "Directory: {directory}\n\n"
                     "Are you sure you want to create the plugin with the provided settings?\n\n"
                     "Title: {title}\n"
+                    "Template: {template}\n"
                     "Categories: {categories}\n"
                     "License: {license}"
                 )
             ).format(
                 directory=self.ui.plugin_directory.text().strip(),
                 title=self.ui.plugin_title.text().strip(),
+                template=self.ui.plugin_type.currentText(),
                 categories=', '.join(category_title_i18n(cat) for cat in categories) if categories else self.api.tr('ui.categories_none', 'None'),
                 license=self.ui.plugin_license.currentText(),
             ),
@@ -338,10 +348,12 @@ class CreatePluginOptionsPage(OptionsPage):
         outdir = os.path.normpath(self.ui.plugin_directory.text().strip())
         base_locale = self.ui.base_language.currentData() or 'en'
         categories = self.get_categories_list()
+        plugin_type = self.ui.plugin_type.currentData()
+        i18n_support = self.ui.tx_enabled.isChecked()
 
         # Write .gitignore file
         self.api.logger.debug(f"Writing {os.path.join(outdir, '.gitignore')}")
-        self.err_message = write_gitignore(outdir, name)
+        self.err_message = write_gitignore(outdir)
         if self.err_message:
             return False
 
@@ -362,21 +374,21 @@ class CreatePluginOptionsPage(OptionsPage):
             license=license,
             license_url=license_url,
             categories=categories,
-            base_locale=base_locale if self.ui.tx_enabled.isChecked() else None,
+            base_locale=base_locale if i18n_support else None,
         )
         if self.err_message:
             return False
 
         # Write __init__.py file
         self.api.logger.debug(f"Writing {os.path.join(outdir, '__init__.py')}")
-        self.err_message = write_init(outdir, name, base_locale)
+        self.err_message = write_init(outdir, plugin_type, i18n_support)
         if self.err_message:
             return False
 
         # Write locale *.toml files
-        if self.ui.tx_enabled.isChecked():
+        if i18n_support:
             self.api.logger.debug(f"Writing locale files to {os.path.join(outdir, 'locale')}")
-            self.err_message = write_locale(outdir, name, description, base_locale)
+            self.err_message = write_locale(outdir, name, description, base_locale, plugin_type)
             if self.err_message:
                 return False
 

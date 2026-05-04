@@ -4,32 +4,32 @@
 import os
 
 
-TEMPLATE = """# Plugin: {name}
-.project
-picard
-*.orig
-*.bak
-__pycache__/
+TEMPLATE = """# Byte-compiled / optimized / DLL files
 *.py[cod]
+__pycache__/
+
+# Environments and development tools
+.venv/
+.ruff_cache/
+
+# Distribution / packaging
 *.egg-info/
 dist/
 """
 
 
-def write_gitignore(plugin_dir: str, name: str) -> str | None:
+def write_gitignore(plugin_dir: str) -> str | None:
     """Write the .gitignore file.
 
     Args:
         plugin_dir (str): Plugin directory
-        name (str): Plugin name
 
     Returns:
         str | None: Error message or None if successful
     """
-    content = TEMPLATE.format(name=name)
     try:
         with open(os.path.join(plugin_dir, '.gitignore'), 'w', encoding='utf8') as f:
-            f.write(content)
+            f.write(TEMPLATE)
     except OSError as e:
         return f"Error writing '.gitignore': {e}"
 
