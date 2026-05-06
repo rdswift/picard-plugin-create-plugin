@@ -1,8 +1,15 @@
+# Byte-compiled / optimized / DLL files
+*.py[cod]
+__pycache__/
+
+# Environments and development tools
+.venv/
+.ruff_cache/
 .project
 picard
 *.orig
 *.bak
-__pycache__/
-*.py[cod]
+
+# Distribution / packaging
 *.egg-info/
 dist/

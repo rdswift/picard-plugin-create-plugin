@@ -63,9 +63,9 @@ def write_manifest(plugin_dir: str, name: str, description: str, author: str, em
     if base_locale:
         content += f'source_locale = "{base_locale}"\n'
         for key in ['name', 'description', 'long description']:
-            content += f"\n[{key}_i18n]\n".replace(' ', '_')
+            content += f"\n#[{key}_i18n]\n".replace(' ', '_')
             for code, language in get_locale_list(base_locale):
-                content += f'{code} = "Translated plugin {key} for {language} locale"\n'
+                content += f'#{code} = "Translated plugin {key} for {language} locale"\n'
 
     try:
         with open(os.path.join(plugin_dir, "MANIFEST.toml"), 'w', encoding='utf8') as f:

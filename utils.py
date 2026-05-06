@@ -92,7 +92,7 @@ def make_short_description(description: str) -> str:
 
 
 def get_locale_list(base_locale: str | None) -> list[tuple[str, str]]:
-    """Get a list of locales for the plugin.
+    """Get a list of locales for the plugin, not including the base locale.
 
     Args:
         base_locale (str | None): Base language for translations

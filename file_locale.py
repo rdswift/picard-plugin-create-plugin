@@ -9,14 +9,8 @@ from .utils import (
     make_toml_string,
 )
 
-# TEMPLATE = '''"manifest.description" = "{short_description}"
-# "manifest.long_description" = "{description}"
-# "manifest.name" = "{name}"
-# "message.greeting" = "Hello from the plugin!"
-# '''
 
-
-def write_locale(plugin_dir: str, name: str, description: str, base_locale: str | None, plugin_type: str) -> str | None:
+def write_locale(plugin_dir: str, name: str, description: str, base_locale: str | None, plugin_types: set) -> str | None:
     """Write the locale files.
 
     Args:
@@ -24,7 +18,7 @@ def write_locale(plugin_dir: str, name: str, description: str, base_locale: str 
         name (str): Plugin name
         description (str): Plugin description
         base_locale (str | None): Base language for translations
-        plugin_type (str): Type of plugin
+        plugin_types (set): Selected plugin code types to include
 
     Returns:
         str | None: Error message or None if successful
@@ -46,10 +40,10 @@ def write_locale(plugin_dir: str, name: str, description: str, base_locale: str 
         f'"manifest.name" = "{make_toml_string(name)}"',
     ]
 
-    if plugin_type in ('basic', 'metadata'):
+    if not plugin_types or 'metadata' in plugin_types:
         lines.append('"message.greeting" = "Hello from the plugin!"')
 
-    if plugin_type == 'action':
+    if 'action' in plugin_types:
         lines.append('"action.title" = "Plugin action"')
         lines.append('"action.dialog.title" = "Plugin action"')
         lines.append('"action.dialog.text" = "Action triggered"')

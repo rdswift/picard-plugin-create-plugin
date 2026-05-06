@@ -152,7 +152,35 @@
       </widget>
      </item>
      <item row="5" column="1">
-      <widget class="QComboBox" name="plugin_type"/>
+      <layout class="QHBoxLayout" name="plugin_type_layout">
+       <item>
+        <widget class="QLabel" name="label_plugin_type_count">
+         <property name="text">
+          <string>label.plugin.type.count</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_select_plugin_types">
+         <property name="text">
+          <string>button.text.select</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
@@ -358,7 +386,6 @@
   <tabstop>plugin_directory</tabstop>
   <tabstop>directory_browser</tabstop>
   <tabstop>plugin_license</tabstop>
-  <tabstop>plugin_type</tabstop>
   <tabstop>enter_initial_commit</tabstop>
   <tabstop>tx_enabled</tabstop>
   <tabstop>base_language</tabstop>
