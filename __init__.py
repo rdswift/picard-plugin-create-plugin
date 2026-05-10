@@ -43,6 +43,7 @@ from .file_init import (
 from .file_locale import write_locale
 from .file_manifest import write_manifest
 from .file_readme import write_readme
+from .file_ui import write_ui
 from .licenses import LICENSES
 from .ui_plugin_dialog import Ui_CreatePluginOptionsPage
 from .utils import is_directory_empty
@@ -353,7 +354,7 @@ class CreatePluginOptionsPage(OptionsPage):
         outdir = os.path.normpath(self.ui.plugin_directory.text().strip())
         base_locale = self.ui.base_language.currentData() or 'en'
         categories = self.get_categories_list()
-        i18n_support = self.ui.tx_enabled.isChecked()
+        i18n_support = self.ui.tx_enabled.isChecked() or 'options' in self.selected_templates
 
         # Write .gitignore file
         self.api.logger.debug(f"Writing {os.path.join(outdir, '.gitignore')}")
@@ -388,6 +389,13 @@ class CreatePluginOptionsPage(OptionsPage):
         self.err_message = write_init(outdir, self.selected_templates, i18n_support)
         if self.err_message:
             return False
+
+        # Write UI files
+        if 'options' in self.selected_templates:
+            self.api.logger.debug(f"Writing UI files to {outdir}")
+            self.err_message = write_ui(outdir)
+            if self.err_message:
+                return False
 
         # Write locale *.toml files
         if i18n_support:

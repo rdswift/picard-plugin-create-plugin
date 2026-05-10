@@ -48,6 +48,11 @@ def write_locale(plugin_dir: str, name: str, description: str, base_locale: str 
         lines.append('"action.dialog.title" = "Plugin action"')
         lines.append('"action.dialog.text" = "Action triggered"')
 
+    if 'options' in plugin_types:
+        lines.append('"qt.PlaygroundOptionsPage.label.disclaimer" = "This is not a real plugin. It only exists to try the implementation of as much of Picard\'s plugin API as possible."')
+        lines.append('"qt.PlaygroundOptionsPage.label.run_image_processor" = "Run image processor. This applies a sepia effect on all loaded cover images."')
+        lines.append('"qt.PlaygroundOptionsPage.title.playground_options" = "API Playground options"')
+
     content = '\n'.join(lines) + '\n'
     locales = [code for code, _ in get_locale_list(base_locale)]
     locales.append(base_locale)
