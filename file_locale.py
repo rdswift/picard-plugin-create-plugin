@@ -4,14 +4,13 @@
 import os
 
 from .utils import (
-    get_locale_list,
     make_short_description,
     make_toml_string,
 )
 
 
 def write_locale(plugin_dir: str, name: str, description: str, base_locale: str | None, plugin_types: set) -> str | None:
-    """Write the locale files.
+    """Write the locale file for the base locale.
 
     Args:
         plugin_dir (str): Plugin directory
@@ -54,14 +53,11 @@ def write_locale(plugin_dir: str, name: str, description: str, base_locale: str 
         lines.append('"qt.PlaygroundOptionsPage.title.playground_options" = "API Playground options"')
 
     content = '\n'.join(lines) + '\n'
-    locales = [code for code, _ in get_locale_list(base_locale)]
-    locales.append(base_locale)
-    for loc in locales:
-        loc_file = f"{loc}.toml"
-        try:
-            with open(os.path.join(locale_dir, loc_file), 'w', encoding='utf8') as f:
-                f.write(content)
-        except OSError as e:
-            return f"Error writing 'locale/{loc_file}': {e}"
+    loc_file = f"{base_locale}.toml"
+    try:
+        with open(os.path.join(locale_dir, loc_file), 'w', encoding='utf8') as f:
+            f.write(content)
+    except OSError as e:
+        return f"Error writing 'locale/{loc_file}': {e}"
 
     return None

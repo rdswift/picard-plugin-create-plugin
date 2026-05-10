@@ -18,6 +18,8 @@ dist/
 """
 
 
+# TODO: Use code available in Picard
+
 def write_gitignore(plugin_dir: str) -> str | None:
     """Write the .gitignore file.
 

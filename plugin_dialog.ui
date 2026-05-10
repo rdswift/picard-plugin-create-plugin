@@ -75,60 +75,70 @@
      </property>
      <item row="0" column="0">
       <widget class="QLabel" name="label_plugin_title">
+       <property name="toolTip">
+        <string>tooltip.plugin_title</string>
+       </property>
        <property name="text">
         <string>label.plugin_title</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="plugin_title"/>
+      <widget class="QLineEdit" name="plugin_title">
+       <property name="toolTip">
+        <string>tooltip.plugin_title</string>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_author_name">
+       <property name="toolTip">
+        <string>tooltip.plugin_author_name</string>
+       </property>
        <property name="text">
         <string>label.plugin_author_name</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="plugin_author_name"/>
+      <widget class="QLineEdit" name="plugin_author_name">
+       <property name="toolTip">
+        <string>tooltip.plugin_author_name</string>
+       </property>
+      </widget>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label_author_email">
+       <property name="toolTip">
+        <string>tooltip.plugin_author_email</string>
+       </property>
        <property name="text">
         <string>label.plugin_author_email</string>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="plugin_author_email"/>
+      <widget class="QLineEdit" name="plugin_author_email">
+       <property name="toolTip">
+        <string>tooltip.plugin_author_email</string>
+       </property>
+      </widget>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="label_plugin_directory">
+       <property name="toolTip">
+        <string>tooltip.plugin_directory</string>
+       </property>
        <property name="text">
         <string>label.plugin_directory</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="QLineEdit" name="plugin_directory"/>
-       </item>
-       <item>
-        <widget class="QToolButton" name="directory_browser">
-         <property name="text">
-          <string notr="true">...</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
      <item row="4" column="0">
       <widget class="QLabel" name="label_plugin_license">
+       <property name="toolTip">
+        <string>tooltip.plugin_license</string>
+       </property>
        <property name="text">
         <string>label.plugin_license</string>
        </property>
@@ -142,10 +152,16 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="toolTip">
+        <string>tooltip.plugin_license</string>
+       </property>
       </widget>
      </item>
      <item row="5" column="0">
       <widget class="QLabel" name="label_plugin_type">
+       <property name="toolTip">
+        <string>tooltip.plugin.type</string>
+       </property>
        <property name="text">
         <string>label.plugin.type</string>
        </property>
@@ -175,8 +191,38 @@
        </item>
        <item>
         <widget class="QPushButton" name="button_select_plugin_types">
+         <property name="toolTip">
+          <string>tooltip.button.select</string>
+         </property>
          <property name="text">
           <string>button.text.select</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="3" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLineEdit" name="plugin_directory">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>tooltip.plugin_directory</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="directory_browser">
+         <property name="toolTip">
+          <string>tooltip.open_directory_browser</string>
+         </property>
+         <property name="text">
+          <string notr="true">...</string>
          </property>
         </widget>
        </item>
@@ -186,8 +232,21 @@
    </item>
    <item>
     <widget class="QCheckBox" name="enter_initial_commit">
+     <property name="toolTip">
+      <string>tooltip.enter_initial_commit</string>
+     </property>
      <property name="text">
       <string>label.enter_initial_commit</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="open_plugin_directory">
+     <property name="toolTip">
+      <string>tooltip.open_plugin_directory</string>
+     </property>
+     <property name="text">
+      <string>label.open_plugin_directory</string>
      </property>
     </widget>
    </item>
@@ -226,6 +285,9 @@
       </property>
       <item>
        <widget class="QCheckBox" name="tx_enabled">
+        <property name="toolTip">
+         <string>tooltip.translations_enabled</string>
+        </property>
         <property name="text">
          <string>label.translations_enabled</string>
         </property>
@@ -249,6 +311,9 @@
       </item>
       <item>
        <widget class="QLabel" name="label_base_language">
+        <property name="toolTip">
+         <string>tooltip.base_language</string>
+        </property>
         <property name="text">
          <string>label.base_language</string>
         </property>
@@ -262,6 +327,9 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="toolTip">
+         <string>tooltip.base_language</string>
+        </property>
        </widget>
       </item>
      </layout>
@@ -273,6 +341,9 @@
       <font>
        <bold>true</bold>
       </font>
+     </property>
+     <property name="toolTip">
+      <string>tooltip.plugin_categories</string>
      </property>
      <property name="text">
       <string>section.categories.title</string>
@@ -313,6 +384,9 @@
        <bold>true</bold>
       </font>
      </property>
+     <property name="toolTip">
+      <string>tooltip.plugin_description</string>
+     </property>
      <property name="text">
       <string>section.description.title</string>
      </property>
@@ -337,6 +411,9 @@
        <width>16777215</width>
        <height>16777215</height>
       </size>
+     </property>
+     <property name="toolTip">
+      <string>tooltip.plugin_description</string>
      </property>
      <property name="placeholderText">
       <string>placeholder.plugin_description</string>
@@ -363,6 +440,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="button_clear">
+       <property name="toolTip">
+        <string>tooltip.button.clear</string>
+       </property>
        <property name="text">
         <string>button.text.clear</string>
        </property>
@@ -370,6 +450,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="button_create">
+       <property name="toolTip">
+        <string>tooltip.button.create</string>
+       </property>
        <property name="text">
         <string>button.text.create</string>
        </property>
@@ -386,7 +469,9 @@
   <tabstop>plugin_directory</tabstop>
   <tabstop>directory_browser</tabstop>
   <tabstop>plugin_license</tabstop>
+  <tabstop>button_select_plugin_types</tabstop>
   <tabstop>enter_initial_commit</tabstop>
+  <tabstop>open_plugin_directory</tabstop>
   <tabstop>tx_enabled</tabstop>
   <tabstop>base_language</tabstop>
   <tabstop>plugin_description</tabstop>

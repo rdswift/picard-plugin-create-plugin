@@ -1,6 +1,7 @@
 """Plugin __init__.py file generation
 """
-# Code examples for the __init__.py file are based on the playgound / testing plugin by Philipp Wolfer.
+# Code examples for the generated __init__.py file are based on the
+# playgound / testing plugin by Philipp Wolfer.
 # See https://git.sr.ht/~phw/picard-plugin-playground
 
 from collections import (
@@ -402,61 +403,134 @@ CODE_BLOCKS = OrderedDict(
         ('metadata', {
             'name': t_("code_block.metadata", "Album/Track metadata processing"),
             'code_generator': CodeMetadata,
+            'tooltip': t_(
+                'ui.tooltip.code_template.metadata',
+                'Code template for the MusicBrainz metadata post-processor hook, including both Album and Track processing examples.',
+            ),
         }),
 
         ('action', {
             'name': t_("code_block.action", "Menu item"),
             'code_generator': CodeAction,
+            'tooltip': t_(
+                'ui.tooltip.code_template.action',
+                (
+                    'Code template for the hook used to add right-click context menu actions for albums, tracks and files in '
+                    "'Unmatched Files', 'Clusters' and the 'ClusterList' (parent folder of Clusters). Actions can also "
+                    'be added to the main application menu bar.'
+                ),
+            ),
         }),
 
         ('options', {
             'name': t_("code_block.options", "Options page and settings"),
             'code_generator': CodeOptionsPage,
+            'tooltip': t_(
+                'ui.tooltip.code_template.options',
+                'Code template for adding plugin-specific user settings and an options page for managing the settings.',
+            ),
         }),
 
         ('album_post_removal', {
             'name': t_("code_block.album_post_removal", "Album post-removal processing"),
             'code_generator': CodeAlbumPostRemoval,
+            'tooltip': t_(
+                'ui.tooltip.code_template.album_post_removal',
+                'Code template for the hook called after an album has been removed from Picard.',
+            ),
         }),
 
         ('file_post_load', {
             'name': t_("code_block.file_post_load", "File post-load processing"),
             'code_generator': CodeFilePostLoad,
+            'tooltip': t_(
+                'ui.tooltip.code_template.file_post_load',
+                (
+                    'Code template for the hook called after a file has been loaded into Picard. This could for example '
+                    'be used to load additional data for a file.'
+                ),
+            ),
         }),
 
         ('file_post_add_track', {
             'name': t_("code_block.file_post_add_track", "File post add to track processing"),
             'code_generator': CodeFilePostAddToTrack,
+            'tooltip': t_(
+                'ui.tooltip.code_template.file_post_add_track',
+                'Code template for the hook called after a file has been added to a track (on the right-hand pane of Picard).',
+            ),
         }),
 
         ('file_post_remove_track', {
             'name': t_("code_block.file_post_remove_track", "File post remove from track processing"),
             'code_generator': CodeFilePostRemoveFromTrack,
+            'tooltip': t_(
+                'ui.tooltip.code_template.file_post_remove_track',
+                'Code template for the hook called after a file has been removed from a track (on the right-hand pane of Picard).',
+            ),
         }),
 
         ('file_pre_save', {
             'name': t_("code_block.file_pre_save", "File pre-save processing"),
             'code_generator': CodeFilePreSave,
+            'tooltip': t_(
+                'ui.tooltip.code_template.file_pre_save',
+                (
+                    'Code template for the hook called before a file has been saved. This can for example be '
+                    'used to run additional pre-processing on the file.'
+                ),
+            ),
         }),
 
         ('file_post_save', {
             'name': t_("code_block.file_post_save", "File post-save processing"),
             'code_generator': CodeFilePostSave,
+            'tooltip': t_(
+                'ui.tooltip.code_template.file_post_save',
+                (
+                    'Code template for the hook called after a file has been saved. This can for example be used '
+                    "to run additional post-processing on the file or write extra data. Note that the file's "
+                    'metadata is already the newly saved metadata.'
+                ),
+            ),
         }),
 
         ('script_functions', {
             'name': t_("code_block.script_functions", "Scripting functions"),
             'code_generator': CodeScriptFunctions,
+            'tooltip': t_(
+                'ui.tooltip.code_template.script_functions',
+                (
+                    'Code template for adding new scripting functions to Picard, including examples with varying '
+                    'numbers of arguments. This provides the descriptions used in the scripting auto-completion '
+                    'and documentation.'
+                ),
+            ),
         }),
 
         ('script_variables', {
             'name': t_("code_block.script_variables", "Scripting variables"),
             'code_generator': CodeScriptVariables,
+            'tooltip': t_(
+                'ui.tooltip.code_template.script_variables',
+                (
+                    'Code template for adding new scripting variables to Picard, used to describe the variables in '
+                    'the scripting auto-completion and documentation. This is often used in conjunction with '
+                    'metadata processors that create new variables.'
+                ),
+            ),
         }),
 
         ('file_format', {
             'name': t_("code_block.format", "File format"),
             'code_generator': CodeFileFormat,
+            'tooltip': t_(
+                'ui.tooltip.code_template.file_format',
+                (
+                    'Code template to extend Picard with support for additional file formats. See the existing file '
+                    'format implementations for details on how to implement the _load and _save methods.'
+                ),
+            ),
         }),
     ]
 )

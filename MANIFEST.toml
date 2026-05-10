@@ -7,8 +7,8 @@ license = "GPL-2.0-or-later"
 license_url = "https://www.gnu.org/licenses/gpl-2.0.html"
 long_description = """
 This plugin assists in the creation of a local plugin by preparing the plugin framework files and git repository.
-It gathers some information from the user such as author, title, description, license and target directory, and
-then writes the basic framework files to the specified directory and initializes the git repository.
+It gathers some information from the user such as author, title, description and license, and then writes the selected
+framework files to the plugin directory and initializes the git repository.
 """
 categories = ["other"]
 homepage = "https://picard-plugins-user-guides.readthedocs.io/en/latest/create_plugin/user_guide.html"

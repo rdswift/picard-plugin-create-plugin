@@ -2,6 +2,8 @@
 """
 
 import os
+import re
+import unicodedata
 
 
 def is_directory_empty(directory: str) -> bool:
@@ -22,6 +24,8 @@ def is_directory_empty(directory: str) -> bool:
     return True
 
 
+# TODO: Use code available in Picard
+
 def clean_markdown_text(text: str) -> str:
     """Clean markdown text.
 
@@ -35,6 +39,8 @@ def clean_markdown_text(text: str) -> str:
         text = text.replace(char, '\\' + char)
     return text
 
+
+# TODO: Use code available in Picard
 
 def make_toml_string(text: str) -> str:
     """Create a TOML string from the given text.
@@ -92,10 +98,11 @@ def make_short_description(description: str) -> str:
 
 
 def get_locale_list(base_locale: str | None) -> list[tuple[str, str]]:
-    """Get a list of locales for the plugin, not including the base locale.
+    """Get a list of example locales for the plugin, not including the base locale.
 
     Args:
         base_locale (str | None): Base language for translations
+
     Returns:
         list[tuple[str, str]]: List of tuples containing locale code and language name
     """
@@ -109,3 +116,13 @@ def get_locale_list(base_locale: str | None) -> list[tuple[str, str]]:
         return sample_locales
 
     return [(code, name) for code, name in sample_locales if not base_locale.startswith(code)]
+
+
+# TODO: Use code available in Picard
+
+def slugify(value: str):
+    value = str(value)
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s-]', '', value.lower())
+    value = re.sub(r'[-\s]+', '-', value).strip('-_')
+    return value
