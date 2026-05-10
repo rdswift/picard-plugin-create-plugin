@@ -47,10 +47,11 @@ def write_locale(plugin_dir: str, name: str, description: str, base_locale: str 
     locales = [code for code, _ in get_locale_list(base_locale)]
     locales.append(base_locale)
     for loc in locales:
+        loc_file = f"{loc}.toml"
         try:
-            with open(os.path.join(locale_dir, loc), 'w', encoding='utf8') as f:
+            with open(os.path.join(locale_dir, loc_file), 'w', encoding='utf8') as f:
                 f.write(content)
         except OSError as e:
-            return f"Error writing 'locale/{loc}': {e}"
+            return f"Error writing 'locale/{loc_file}': {e}"
 
     return None
