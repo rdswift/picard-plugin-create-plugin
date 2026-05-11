@@ -2,13 +2,13 @@
 """
 # Code examples for the generated __init__.py file are based on the
 # playgound / testing plugin by Philipp Wolfer.
+#
 # See https://git.sr.ht/~phw/picard-plugin-playground
 
 from collections import (
     OrderedDict,
     namedtuple,
 )
-import os
 
 from picard.plugin3.api import (
     PluginApi,
@@ -363,9 +363,6 @@ class CodeOptionsPage(CodeTemplate):
     includes = {
         Include(module='enum', name='Enum'),
         Include(module='enum', name='auto'),
-        Include(module='PyQt6', name='QtCore'),
-        Include(module='PyQt6', name='QtGui'),
-        Include(module='PyQt6', name='QtWidgets'),
         Include(module='picard.plugin3.api', name='OptionsPage'),
         Include(module='.ui_options', name='Ui_PlaygroundOptionsPage'),
     }
@@ -536,16 +533,15 @@ CODE_BLOCKS = OrderedDict(
 )
 
 
-def write_init(plugin_dir: str, code_blocks: set, i18n_support: bool = False) -> str | None:
-    """Write the __init__.py file.
+def generate_init(code_blocks: set[str], i18n_support: bool = False) -> str:
+    """Generate the content for the __init__.py file.
 
     Args:
-        plugin_dir (str): Plugin directory
-        templates (set): Code blocks to include
-        i18n_support (bool): Whether to include translation support in the template
+        code_blocks (set[str]): Code blocks to include.
+        i18n_support (bool, optional): Whether to include translation support in the template. Defaults to False.
 
     Returns:
-        str | None: Error message or None if successful
+        str: Content for the __init__.py file.
     """
     includes = {'picard.plugin3.api': {'PluginApi'}}
     code_block = ""
@@ -621,16 +617,10 @@ def write_init(plugin_dir: str, code_blocks: set, i18n_support: bool = False) ->
         '    """Called when the plugin is disabled."""\n'
         '    pass\n'
     )
-    try:
-        with open(os.path.join(plugin_dir, '__init__.py'), 'w', encoding='utf8') as f:
-            f.write(content)
-    except OSError as e:
-        return f"Error writing '__init__.py': {e}"
-
-    return None
+    return content
 
 
-def _make_includes_block(includes: dict[str, set]) -> str:
+def _make_includes_block(includes: dict[str, set[str]]) -> str:
     includes_block = ''
     old_module = ''
     for key in sorted(includes.keys()):

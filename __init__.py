@@ -20,9 +20,11 @@
 
 # Code examples for the generated __init__.py file are based on the
 # playgound / testing plugin by Philipp Wolfer.
+#
 # See https://git.sr.ht/~phw/picard-plugin-playground
 
 import os
+from pathlib import Path
 
 from PyQt6 import QtWidgets
 
@@ -37,16 +39,18 @@ from picard.plugin3.categories import (
     CATEGORIES_TITLES,
     category_title_i18n,
 )
+from picard.plugin3.init_templates import (
+    slugify_name,
+    write_plugin_project,
+)
+from picard.plugin3.project_config import PluginProjectConfig
 from picard.util import open_local_path
 
-from .file_gitignore import write_gitignore
 from .file_init import (
     CODE_BLOCKS,
-    write_init,
+    generate_init,
 )
-from .file_locale import write_locale
-from .file_manifest import write_manifest
-from .file_readme import write_readme
+from .file_locale import generate_locale
 from .file_ui import write_ui
 from .licenses import LICENSES
 from .ui_plugin_dialog import Ui_CreatePluginOptionsPage
@@ -54,10 +58,7 @@ from .ui_utils import (
     CATEGORY_TOOLTIPS,
     NO_DESCRIPTION,
 )
-from .utils import (
-    is_directory_empty,
-    slugify,
-)
+from .utils import make_short_description
 
 
 USER_GUIDE_URL = 'https://picard-plugins-user-guides.readthedocs.io/en/latest/create_plugin/user_guide.html'
@@ -87,7 +88,7 @@ class CreatePluginOptionsPage(OptionsPage):
         self.ui = Ui_CreatePluginOptionsPage()
         self.ui.setupUi(self)
 
-        self.selected_templates = []
+        self.selected_templates: list[str] = []
         self.categories_map = {}
         self.setup_ui()
 
@@ -169,12 +170,12 @@ class CreatePluginOptionsPage(OptionsPage):
         self.api.plugin_config[OPT_CATEGORIES] = self.get_categories_list()
         self.api.plugin_config[OPT_TEMPLATES] = self.selected_templates
 
-    def confirm_creation(self, plugin_name: str, plugin_dir: str) -> bool:
+    def confirm_creation(self, plugin_name: str, plugin_dir: Path) -> bool:
         """Show a confirmation dialog before creating the plugin.
 
         Args:
             plugin_name (str): Name of the plugin.
-            plugin_dir (str): Directory to use for the plugin.
+            plugin_dir (Path): Directory to use for the plugin.
 
         Returns:
             bool: True if the user confirms, False otherwise.
@@ -222,9 +223,8 @@ class CreatePluginOptionsPage(OptionsPage):
         """Create the plugin based on the provided settings.
         """
         plugin_name = self.ui.plugin_title.text().strip()
-        plugin_name_slug = slugify(plugin_name) or 'unknown'
-        plugin_directory = os.path.join(self.ui.plugin_directory.text().strip().rstrip('/\\'), f"picard-plugin-{plugin_name_slug}")
-
+        plugin_name_slug = slugify_name(plugin_name) or 'unknown'
+        plugin_directory: Path = Path(self.ui.plugin_directory.text().strip().rstrip('/\\'), f"picard-plugin-{plugin_name_slug}")
         self.err_message = ""
         if not self.validate_settings(plugin_directory):
             return
@@ -251,7 +251,8 @@ class CreatePluginOptionsPage(OptionsPage):
             )
             return
 
-        self.save()     # Save the current settings to use for future plugins
+        # Save the current settings to use for future plugins
+        self.save()
 
         self.api.logger.info(f'Plugin "{plugin_name}" created successfully at: {plugin_directory}')
 
@@ -289,20 +290,20 @@ class CreatePluginOptionsPage(OptionsPage):
 
         self.open_created_plugin_dir(plugin_directory)
 
-    def open_created_plugin_dir(self, plugin_dir: str) -> None:
+    def open_created_plugin_dir(self, plugin_dir: Path) -> None:
         """Opens the newly created plugin directory in the user's file browser.
 
         Args:
-            plugin_dir (str): Directory to open.
+            plugin_dir (Path): Directory to open.
         """
         if self.ui.open_plugin_directory.isChecked():
-            open_local_path(plugin_dir)
+            open_local_path(str(plugin_dir))
 
-    def validate_settings(self, plugin_dir: str) -> bool:
+    def validate_settings(self, plugin_dir: Path) -> bool:
         """Validate the provided settings before creating the plugin.
 
         Args:
-            plugin_dir (str): Directory to validate.
+            plugin_dir (Path): Directory to validate.
 
         Returns (bool): True on success, otherwise False.
         """
@@ -318,7 +319,7 @@ class CreatePluginOptionsPage(OptionsPage):
             return False
 
         try:
-            os.makedirs(plugin_dir, exist_ok=True)
+            plugin_dir.mkdir(parents=True, exist_ok=True)
 
         except Exception as e:
             QtWidgets.QMessageBox.warning(
@@ -332,7 +333,7 @@ class CreatePluginOptionsPage(OptionsPage):
             )
             return False
 
-        if not os.path.isdir(plugin_dir):
+        if not plugin_dir.is_dir():
             QtWidgets.QMessageBox.warning(
                 self,
                 self.api.tr('ui.error.invalid_directory', 'Invalid Directory'),
@@ -340,7 +341,7 @@ class CreatePluginOptionsPage(OptionsPage):
             )
             return False
 
-        if not is_directory_empty(plugin_dir):
+        if any(plugin_dir.iterdir()):
             QtWidgets.QMessageBox.warning(
                 self,
                 self.api.tr('ui.error.invalid_directory', 'Invalid Directory'),
@@ -382,18 +383,19 @@ class CreatePluginOptionsPage(OptionsPage):
 
         return True
 
-    def write_plugin_files(self, plugin_name: str, plugin_dir: str) -> bool:
+    def write_plugin_files(self, plugin_name: str, plugin_dir: Path) -> bool:
         """Write the plugin files to the target directory.
 
         Args:
             plugin_name (str): Name of the plugin.
-            plugin_dir (str): Directory to use for the plugin.
+            plugin_dir (Path): Directory to use for the plugin.
 
         Returns (bool): True on success, otherwise False.
         """
         author = self.ui.plugin_author_name.text().strip()
         email = self.ui.plugin_author_email.text().strip()
         description = self.ui.plugin_description.toPlainText().strip()
+        short_description = make_short_description(description)
         license = self.ui.plugin_license.currentData()
         license_info = LICENSES.get(license, {})
         license_url = license_info.get('url', None)
@@ -401,61 +403,42 @@ class CreatePluginOptionsPage(OptionsPage):
         categories = self.get_categories_list()
         i18n_support = self.ui.tx_enabled.isChecked() or 'options' in self.selected_templates
 
-        # Write .gitignore file
-        self.api.logger.debug(f"Writing {os.path.join(plugin_dir, '.gitignore')}")
-        self.err_message = write_gitignore(plugin_dir)
-        if self.err_message:
-            return False
-
-        # Write README.md file
-        self.api.logger.debug(f"Writing {os.path.join(plugin_dir, 'README.md')}")
-        self.err_message = write_readme(plugin_dir, plugin_name, description)
-        if self.err_message:
-            return False
-
-        # Write MANIFEST.toml file
-        self.api.logger.debug(f"Writing {os.path.join(plugin_dir, 'MANIFEST.toml')}")
-        self.err_message = write_manifest(
-            plugin_dir=plugin_dir,
+        project = PluginProjectConfig(
             name=plugin_name,
-            description=description,
-            author=author,
-            email=email,
-            license=license,
-            license_url=license_url,
+            description=short_description,
+            authors=[author,],
+            maintainers=[],
             categories=categories,
-            base_locale=base_locale if i18n_support else None,
+            license_id=license,
+            license_url=license_url,
+            long_description=description,
+            report_bugs_to=f"mailto:{email}",
+            with_i18n=i18n_support,
+            source_locale=base_locale,
+            init_py_content=generate_init(self.selected_templates, i18n_support),
+            locale_toml_content=generate_locale(plugin_name, short_description, description, self.selected_templates),
         )
-        if self.err_message:
-            return False
 
-        # Write __init__.py file
-        self.api.logger.debug(f"Writing {os.path.join(plugin_dir, '__init__.py')}")
-        self.err_message = write_init(plugin_dir, self.selected_templates, i18n_support)
-        if self.err_message:
+        # Write .gitignore, README.md, MANIFEST.toml, __init__.py and locale files
+        try:
+            write_plugin_project(plugin_dir, project)
+        except OSError as e:
+            self.err_message = f'Failed to create plugin project: {e}'
             return False
 
         # Write UI files
         if 'options' in self.selected_templates:
-            self.api.logger.debug(f"Writing UI files to {plugin_dir}")
             self.err_message = write_ui(plugin_dir)
-            if self.err_message:
-                return False
-
-        # Write locale *.toml files
-        if i18n_support:
-            self.api.logger.debug(f"Writing locale files to {os.path.join(plugin_dir, 'locale')}")
-            self.err_message = write_locale(plugin_dir, plugin_name, description, base_locale, self.selected_templates)
             if self.err_message:
                 return False
 
         return True
 
-    def initialize_git_repo(self, plugin_dir: str, name: str, email: str, initial_commit: bool) -> str | None:
+    def initialize_git_repo(self, plugin_dir: Path, name: str, email: str, initial_commit: bool) -> str | None:
         """Initialize a Git repository in the plugin directory.
 
         Args:
-            plugin_dir (str): Plugin directory
+            plugin_dir (Path): Plugin directory
             name (str): User's name
             email (str): User's email
             initial_commit (bool): Whether to make an initial commit

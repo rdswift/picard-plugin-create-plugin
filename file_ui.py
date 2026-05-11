@@ -1,9 +1,10 @@
 """Plugin UI files generation
 """
 
-import os
+from pathlib import Path
 
 
+# Content of 'ui_options.ui' file
 UI_OPTIONS_UI = """<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>PlaygroundOptionsPage</class>
@@ -146,6 +147,7 @@ QCheckBox { color: black }</string>
 </ui>
 """
 
+# Content of 'ui_options.py' file
 UI_OPTIONS_PY = """# Form implementation generated from reading ui file 'ui_options.ui'
 #
 # Created by: PyQt6 UI code generator 6.9.1
@@ -211,7 +213,7 @@ class Ui_PlaygroundOptionsPage(object):
 """
 
 
-def write_ui(plugin_dir: str) -> str | None:
+def write_ui(plugin_dir: Path) -> str | None:
     """Write the ui_options.ui and ui_options.py files.
 
     Args:
@@ -220,16 +222,10 @@ def write_ui(plugin_dir: str) -> str | None:
     Returns:
         str | None: Error message or None if successful
     """
-    try:
-        with open(os.path.join(plugin_dir, 'ui_options.ui'), 'w', encoding='utf8') as f:
-            f.write(UI_OPTIONS_UI)
-    except OSError as e:
-        return f"Error writing 'ui_options.ui': {e}"
-
-    try:
-        with open(os.path.join(plugin_dir, 'ui_options.py'), 'w', encoding='utf8') as f:
-            f.write(UI_OPTIONS_PY)
-    except OSError as e:
-        return f"Error writing 'ui_options.py': {e}"
+    for filename, text in [('ui_options.ui', UI_OPTIONS_UI), ('ui_options.py', UI_OPTIONS_PY)]:
+        try:
+            (plugin_dir / filename).write_text(text, encoding='utf8')
+        except Exception as e:
+            return f"Error writing '{filename}': {e}"
 
     return None

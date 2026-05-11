@@ -1,42 +1,25 @@
 """Plugin locale files generation
 """
 
-import os
-
-from .utils import (
-    make_short_description,
-    make_toml_string,
-)
+from picard.plugin3.init_templates import toml_escape
 
 
-def write_locale(plugin_dir: str, name: str, description: str, base_locale: str | None, plugin_types: set) -> str | None:
-    """Write the locale file for the base locale.
+def generate_locale(name: str, short_description: str, description: str, plugin_types: list[str]) -> str:
+    """Generate the content for the locale toml file.
 
     Args:
-        plugin_dir (str): Plugin directory
         name (str): Plugin name
+        short_description (str): Plugin short description
         description (str): Plugin description
-        base_locale (str | None): Base language for translations
-        plugin_types (set): Selected plugin code types to include
+        plugin_types (list[str]): Selected plugin code types to include
 
     Returns:
-        str | None: Error message or None if successful
+        str: Content for the locale toml file
     """
-    if not base_locale:
-        return None
-
-    short_description = make_short_description(description)
-
-    locale_dir = os.path.join(plugin_dir, 'locale')
-    try:
-        os.makedirs(locale_dir, exist_ok=True)
-    except OSError as e:
-        return f"Error creating 'locale' directory: {e}"
-
     lines = [
-        f'"manifest.description" = "{make_toml_string(short_description)}"',
-        f'"manifest.long_description" = "{make_toml_string(description)}"',
-        f'"manifest.name" = "{make_toml_string(name)}"',
+        f'"manifest.description" = "{toml_escape(short_description)}"',
+        f'"manifest.long_description" = "{toml_escape(description)}"',
+        f'"manifest.name" = "{toml_escape(name)}"',
     ]
 
     if not plugin_types or 'metadata' in plugin_types:
@@ -52,12 +35,4 @@ def write_locale(plugin_dir: str, name: str, description: str, base_locale: str 
         lines.append('"qt.PlaygroundOptionsPage.label.run_image_processor" = "Run image processor. This applies a sepia effect on all loaded cover images."')
         lines.append('"qt.PlaygroundOptionsPage.title.playground_options" = "API Playground options"')
 
-    content = '\n'.join(lines) + '\n'
-    loc_file = f"{base_locale}.toml"
-    try:
-        with open(os.path.join(locale_dir, loc_file), 'w', encoding='utf8') as f:
-            f.write(content)
-    except OSError as e:
-        return f"Error writing 'locale/{loc_file}': {e}"
-
-    return None
+    return '\n'.join(lines) + '\n'
