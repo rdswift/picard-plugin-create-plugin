@@ -417,7 +417,7 @@ CODE_BLOCKS = OrderedDict(
                 (
                     'Code template for the hook used to add right-click context menu actions for albums, tracks and files in '
                     "'Unmatched Files', 'Clusters' and the 'ClusterList' (parent folder of Clusters). Actions can also "
-                    'be added to the main application menu bar.'
+                    'be added to the main Picard menu bar.'
                 ),
             ),
         }),

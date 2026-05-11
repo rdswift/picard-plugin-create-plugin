@@ -469,10 +469,15 @@ class CreatePluginOptionsPage(OptionsPage):
             repo = backend.init_repository(plugin_dir)
 
             if initial_commit:
+                message = self.api.tr(
+                    'commit_message',
+                    "Initial commit. Created using '{title}'",
+                    title=self.api.tr(self.TITLE),
+                )
                 try:
                     backend.add_and_commit_files(
                         repo,
-                        'Initial plugin framework',
+                        message,
                         author_name=name,
                         author_email=email,
                     )

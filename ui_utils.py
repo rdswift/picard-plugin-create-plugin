@@ -11,7 +11,7 @@ CATEGORY_TOOLTIPS = {
         'ui.tooltip.categories.coverart',
         (
             'The plugin provides cover art related processing, such as adding a new cover art '
-            'source.'
+            'source or cover art filters.'
         ),
     ),
     'formats': t_(
