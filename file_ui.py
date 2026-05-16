@@ -213,19 +213,5 @@ class Ui_PlaygroundOptionsPage(object):
 """
 
 
-def write_ui(plugin_dir: Path) -> str | None:
-    """Write the ui_options.ui and ui_options.py files.
-
-    Args:
-        plugin_dir (str): Plugin directory
-
-    Returns:
-        str | None: Error message or None if successful
-    """
-    for filename, text in [('ui_options.ui', UI_OPTIONS_UI), ('ui_options.py', UI_OPTIONS_PY)]:
-        try:
-            (plugin_dir / filename).write_text(text, encoding='utf8')
-        except Exception as e:
-            return f"Error writing '{filename}': {e}"
-
-    return None
+def get_ui_files_list() -> list[tuple[str | Path, str]]:
+    return [('ui_options.ui', UI_OPTIONS_UI), ('ui_options.py', UI_OPTIONS_PY)]

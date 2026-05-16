@@ -29,7 +29,6 @@ from pathlib import Path
 from PyQt6 import QtWidgets
 
 from picard.const.languages import UI_LANGUAGES
-from picard.git.factory import git_backend
 from picard.plugin3.api import (
     OptionsPage,
     PluginApi,
@@ -39,10 +38,11 @@ from picard.plugin3.categories import (
     CATEGORIES_TITLES,
     category_title_i18n,
 )
-from picard.plugin3.init_templates import (
-    slugify_name,
-    write_plugin_project,
+from picard.plugin3.cli import (
+    ExitCode,
+    PluginCLI,
 )
+from picard.plugin3.init_templates import slugify_name
 from picard.plugin3.project_config import PluginProjectConfig
 from picard.util import open_local_path
 
@@ -51,7 +51,7 @@ from .file_init import (
     generate_init,
 )
 from .file_locale import generate_locale
-from .file_ui import write_ui
+from .file_ui import get_ui_files_list
 from .licenses import LICENSES
 from .ui_plugin_dialog import Ui_CreatePluginOptionsPage
 from .ui_utils import (
@@ -74,6 +74,43 @@ OPT_INITIAL_COMMIT = 'initial_commit'
 OPT_OPEN_DIRECTORY = 'open_dir_on_create'
 OPT_CATEGORIES = 'categories'
 OPT_TEMPLATES = 'templates'
+
+
+class PluginCreatorOutput:
+    def __init__(self, api: PluginApi):
+        self.logger = api.logger
+        self.git_warning = False
+        self.error_text = ''
+
+    def info(self, text: str = ''):
+        pass
+
+    def warning(self, text: str = ''):
+        self.logger.warning(text)
+        self.git_warning = True
+        self.error_text = text
+
+    def error(self, text: str = ''):
+        self.logger.error(text)
+        self.error_text = text
+
+    def success(self, text: str = ''):
+        self.logger.info(text)
+
+    def d_command(self, target: Path) -> str:
+        return str(target)
+
+    def d_name(self, name: str) -> str:
+        return name
+
+    def d_path(self, target: Path) -> str:
+        return str(target)
+
+    def nl(self, count: int = 1) -> None:
+        pass
+
+    def print(self, msg: str = '') -> None:
+        pass
 
 
 class CreatePluginOptionsPage(OptionsPage):
@@ -225,46 +262,79 @@ class CreatePluginOptionsPage(OptionsPage):
         plugin_name = self.ui.plugin_title.text().strip()
         plugin_name_slug = slugify_name(plugin_name) or 'unknown'
         plugin_directory: Path = Path(self.ui.plugin_directory.text().strip().rstrip('/\\'), f"picard-plugin-{plugin_name_slug}")
-        self.err_message = ""
+
         if not self.validate_settings(plugin_directory):
             return
 
         if not self.confirm_creation(plugin_name, plugin_directory):
             return
 
-        author_name = self.ui.plugin_author_name.text().strip()
-        author_email = self.ui.plugin_author_email.text().strip()
-        initial_commit = self.ui.enter_initial_commit.isChecked()
+        self.api.logger.info(f'Creating plugin "{plugin_name}" in {plugin_directory}')
 
-        self.api.logger.debug(f'Creating plugin "{plugin_name}" at directory: {plugin_directory}')
-        if not self.write_plugin_files(plugin_name, plugin_directory):
-            if self.err_message:
-                self.api.logger.error(self.err_message)
-                self.err_message = "\n\n" + self.err_message
+        err_message = ''
+        output = PluginCreatorOutput(self.api)
+        plugin_creator = PluginCLI(manager=None, args={}, output=output, parser=None)
+
+        initial_commit = self.ui.enter_initial_commit.isChecked()
+        author = self.ui.plugin_author_name.text().strip()
+        email = self.ui.plugin_author_email.text().strip()
+        description = self.ui.plugin_description.toPlainText().strip()
+        short_description = make_short_description(description)
+        license = self.ui.plugin_license.currentData()
+        license_info = LICENSES.get(license, {})
+        license_url = license_info.get('url', None)
+        base_locale = self.ui.base_language.currentData() or 'en'
+        categories = self.get_categories_list()
+        i18n_support = self.ui.tx_enabled.isChecked() or 'options' in self.selected_templates
+        additional_files = get_ui_files_list() if 'options' in self.selected_templates else []
+        commit_message = self.api.tr(
+            'commit_message',
+            "Initial commit. Created using '{title}'",
+            title=self.api.tr(self.TITLE),
+        )
+
+        project = PluginProjectConfig(
+            name=plugin_name,
+            description=short_description,
+            authors=[author,],
+            maintainers=[],
+            categories=categories,
+            license_id=license,
+            license_url=license_url,
+            long_description=description,
+            report_bugs_to=f"mailto:{email}",
+            with_i18n=i18n_support,
+            source_locale=base_locale,
+            init_py_content=generate_init(self.selected_templates, i18n_support),
+            locale_toml_content=generate_locale(plugin_name, short_description, description, self.selected_templates),
+            additional_files=additional_files,
+            commit_message=commit_message,
+        )
+
+        return_code = plugin_creator.create_plugin_project(
+            project=project,
+            target=plugin_directory,
+            git_commit=initial_commit,
+        )
+        if return_code != ExitCode.SUCCESS:
+            err_message = output.error_text
+            if err_message:
+                err_message = "\n\n" + err_message
             QtWidgets.QMessageBox.warning(
                 self,
                 self.api.tr('ui.error.creation_failed', 'Plugin Creation Failed'),
                 self.api.tr(
                     'ui.error.creation_failed_message',
                     "An error occurred while creating the plugin. Please check the target directory and try again."
-                ) + (self.err_message or ""),
+                ) + err_message,
             )
             return
 
         # Save the current settings to use for future plugins
         self.save()
 
-        self.api.logger.info(f'Plugin "{plugin_name}" created successfully at: {plugin_directory}')
-
-        self.err_message = self.initialize_git_repo(
-            plugin_dir=plugin_directory,
-            name=author_name,
-            email=author_email,
-            initial_commit=initial_commit,
-        )
-
-        if self.err_message:
-            self.api.logger.error(f"Error initializing git repository: {self.err_message}")
+        if output.git_warning:
+            err_message = output.error_text.strip() or self.api.tr(NO_DESCRIPTION)
             QtWidgets.QMessageBox.warning(
                 self,
                 self.api.tr('ui.error.git_initialization_failed', 'Git Initialization Failed'),
@@ -274,20 +344,17 @@ class CreatePluginOptionsPage(OptionsPage):
                         "The plugin was created but there was an error initializing the "
                         "git repository.\n\nError details: {err_message}"
                     ),
-                    err_message=self.err_message,
+                    err_message=err_message,
                 ),
             )
             self.open_created_plugin_dir(plugin_directory)
             return
-
-        self.api.logger.info(f'Plugin "{plugin_name}" git repository created successfully at: {plugin_directory}')
 
         QtWidgets.QMessageBox.information(
             self,
             self.api.tr('ui.success.creation_complete', 'Plugin Creation Complete'),
             self.api.tr('ui.success.creation_complete_message', 'The plugin has been created successfully.'),
         )
-
         self.open_created_plugin_dir(plugin_directory)
 
     def open_created_plugin_dir(self, plugin_dir: Path) -> None:
@@ -315,37 +382,6 @@ class CreatePluginOptionsPage(OptionsPage):
                     'ui.error.missing_root_directory_message',
                     'No output root directory specified. Please select a target parent directory for the plugin directory creation.'
                 ),
-            )
-            return False
-
-        try:
-            plugin_dir.mkdir(parents=True, exist_ok=True)
-
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(
-                self,
-                self.api.tr('ui.error.invalid_directory', 'Invalid Directory'),
-                self.api.tr(
-                    'ui.error.create_directory_message',
-                    'Unable to create the target directory.\n\nError details: {error}',
-                    error=e
-                ),
-            )
-            return False
-
-        if not plugin_dir.is_dir():
-            QtWidgets.QMessageBox.warning(
-                self,
-                self.api.tr('ui.error.invalid_directory', 'Invalid Directory'),
-                self.api.tr('ui.error.missing_directory_message', 'The target directory for the plugin does not exist.'),
-            )
-            return False
-
-        if any(plugin_dir.iterdir()):
-            QtWidgets.QMessageBox.warning(
-                self,
-                self.api.tr('ui.error.invalid_directory', 'Invalid Directory'),
-                self.api.tr('ui.error.directory_not_empty_message', 'The target directory is not empty.'),
             )
             return False
 
@@ -382,95 +418,6 @@ class CreatePluginOptionsPage(OptionsPage):
             return False
 
         return True
-
-    def write_plugin_files(self, plugin_name: str, plugin_dir: Path) -> bool:
-        """Write the plugin files to the target directory.
-
-        Args:
-            plugin_name (str): Name of the plugin.
-            plugin_dir (Path): Directory to use for the plugin.
-
-        Returns (bool): True on success, otherwise False.
-        """
-        author = self.ui.plugin_author_name.text().strip()
-        email = self.ui.plugin_author_email.text().strip()
-        description = self.ui.plugin_description.toPlainText().strip()
-        short_description = make_short_description(description)
-        license = self.ui.plugin_license.currentData()
-        license_info = LICENSES.get(license, {})
-        license_url = license_info.get('url', None)
-        base_locale = self.ui.base_language.currentData() or 'en'
-        categories = self.get_categories_list()
-        i18n_support = self.ui.tx_enabled.isChecked() or 'options' in self.selected_templates
-
-        project = PluginProjectConfig(
-            name=plugin_name,
-            description=short_description,
-            authors=[author,],
-            maintainers=[],
-            categories=categories,
-            license_id=license,
-            license_url=license_url,
-            long_description=description,
-            report_bugs_to=f"mailto:{email}",
-            with_i18n=i18n_support,
-            source_locale=base_locale,
-            init_py_content=generate_init(self.selected_templates, i18n_support),
-            locale_toml_content=generate_locale(plugin_name, short_description, description, self.selected_templates),
-        )
-
-        # Write .gitignore, README.md, MANIFEST.toml, __init__.py and locale files
-        try:
-            write_plugin_project(plugin_dir, project)
-        except OSError as e:
-            self.err_message = f'Failed to create plugin project: {e}'
-            return False
-
-        # Write UI files
-        if 'options' in self.selected_templates:
-            self.err_message = write_ui(plugin_dir)
-            if self.err_message:
-                return False
-
-        return True
-
-    def initialize_git_repo(self, plugin_dir: Path, name: str, email: str, initial_commit: bool) -> str | None:
-        """Initialize a Git repository in the plugin directory.
-
-        Args:
-            plugin_dir (Path): Plugin directory
-            name (str): User's name
-            email (str): User's email
-            initial_commit (bool): Whether to make an initial commit
-
-        Returns:
-            str | None: Error message or None if successful
-        """
-
-        try:
-            backend = git_backend()
-            repo = backend.init_repository(plugin_dir)
-
-            if initial_commit:
-                message = self.api.tr(
-                    'commit_message',
-                    "Initial commit. Created using '{title}'",
-                    title=self.api.tr(self.TITLE),
-                )
-                try:
-                    backend.add_and_commit_files(
-                        repo,
-                        message,
-                        author_name=name,
-                        author_email=email,
-                    )
-                finally:
-                    repo.free()
-
-        except Exception as e:
-            return str(e)
-
-        return None
 
     def select_plugin_directory(self) -> None:
         """Open a directory selection dialog to choose the plugin root directory.
