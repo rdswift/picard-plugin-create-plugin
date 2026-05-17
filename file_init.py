@@ -655,7 +655,7 @@ def _make_includes_block(includes: dict[str, set[str]]) -> str:
     """
     includes_block = ''
     old_module = ''
-    for key in sorted(includes.keys()):
+    for key in sorted(includes.keys(), key=lambda x: import_level_sorter(x) + x):
         if key:
             first_module = key.split('.')[0]
             if first_module != old_module:
@@ -672,3 +672,21 @@ def _make_includes_block(includes: dict[str, set[str]]) -> str:
                 includes_block += f"    {name},\n"
             includes_block += ")\n"
     return includes_block
+
+
+def import_level_sorter(source_module: str) -> str:
+    """Provides the block level for sorting the import modules.
+
+    Args:
+        source_module (str): The module name to sort.
+
+    Returns:
+        str: The block level.
+    """
+    if source_module.startswith('.'):
+        return '9'
+    if source_module.startswith('picard'):
+        return '3'
+    if source_module.startswith('PyQt'):
+        return '2'
+    return '1'
