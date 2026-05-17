@@ -1,5 +1,22 @@
 """Plugin UI files generation
 """
+# Copyright (C) 2026 Bob Swift (rdswift)
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+
 
 from pathlib import Path
 
@@ -214,4 +231,10 @@ class Ui_PlaygroundOptionsPage(object):
 
 
 def get_ui_files_list() -> list[tuple[str | Path, str]]:
+    """Generates a list of the UI files to include when generating the plugin.
+
+    Returns:
+        list[tuple[str | Path, str]]: The generated list, with each item a tuple containing the
+        filename of the file to create and the text content of the file.
+    """
     return [('ui_options.ui', UI_OPTIONS_UI), ('ui_options.py', UI_OPTIONS_PY)]

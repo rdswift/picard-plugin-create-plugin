@@ -63,7 +63,7 @@ from .utils import make_short_description
 
 USER_GUIDE_URL = 'https://picard-plugins-user-guides.readthedocs.io/en/latest/create_plugin/user_guide.html'
 
-# Option settings
+# Option settings keys
 OPT_AUTHOR_NAME = 'author_name'
 OPT_AUTHOR_EMAIL = 'author_email'
 OPT_ROOT_DIRECTORY = 'root_directory'
@@ -77,6 +77,8 @@ OPT_TEMPLATES = 'templates'
 
 
 class PluginCreatorOutput:
+    """Provides output methods used in the create_plugin_project() method of the
+    picard.plugin3.cli.PluginCLI class."""
     def __init__(self, api: PluginApi):
         self.logger = api.logger
         self.git_warning = False
@@ -136,7 +138,7 @@ class CreatePluginOptionsPage(OptionsPage):
         icon = self.style().standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DirOpenIcon)
         self.ui.directory_browser.setIcon(icon)
 
-        # Set up the categories section with checkboxes for each category
+        # Set up the categories section with checkboxes for each category in three-column grid
         row = 0
         col = 0
         for key in CATEGORIES_TITLES.keys():
@@ -259,12 +261,12 @@ class CreatePluginOptionsPage(OptionsPage):
     def create_plugin(self) -> None:
         """Create the plugin based on the provided settings.
         """
+        if not self.validate_settings():
+            return
+
         plugin_name = self.ui.plugin_title.text().strip()
         plugin_name_slug = slugify_name(plugin_name) or 'unknown'
         plugin_directory: Path = Path(self.ui.plugin_directory.text().strip().rstrip('/\\'), f"picard-plugin-{plugin_name_slug}")
-
-        if not self.validate_settings(plugin_directory):
-            return
 
         if not self.confirm_creation(plugin_name, plugin_directory):
             return
@@ -272,6 +274,7 @@ class CreatePluginOptionsPage(OptionsPage):
         self.api.logger.info(f'Creating plugin "{plugin_name}" in {plugin_directory}')
 
         err_message = ''
+        title = self.api.tr(self.TITLE)
         output = PluginCreatorOutput(self.api)
         plugin_creator = PluginCLI(manager=None, args={}, output=output, parser=None)
 
@@ -290,7 +293,7 @@ class CreatePluginOptionsPage(OptionsPage):
         commit_message = self.api.tr(
             'commit_message',
             "Initial commit. Created using '{title}'",
-            title=self.api.tr(self.TITLE),
+            title=title,
         )
 
         project = PluginProjectConfig(
@@ -305,7 +308,7 @@ class CreatePluginOptionsPage(OptionsPage):
             report_bugs_to=f"mailto:{email}",
             with_i18n=i18n_support,
             source_locale=base_locale,
-            init_py_content=generate_init(self.selected_templates, i18n_support),
+            init_py_content=generate_init(title, self.selected_templates, i18n_support),
             locale_toml_content=generate_locale(plugin_name, short_description, description, self.selected_templates),
             additional_files=additional_files,
             commit_message=commit_message,
@@ -366,11 +369,8 @@ class CreatePluginOptionsPage(OptionsPage):
         if self.ui.open_plugin_directory.isChecked():
             open_local_path(str(plugin_dir))
 
-    def validate_settings(self, plugin_dir: Path) -> bool:
+    def validate_settings(self) -> bool:
         """Validate the provided settings before creating the plugin.
-
-        Args:
-            plugin_dir (Path): Directory to validate.
 
         Returns (bool): True on success, otherwise False.
         """

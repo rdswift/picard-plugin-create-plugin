@@ -1,5 +1,22 @@
 """Plugin __init__.py file generation
 """
+# Copyright (C) 2026 Bob Swift (rdswift)
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+
 # Code examples for the generated __init__.py file are based on the
 # playgound / testing plugin by Philipp Wolfer.
 #
@@ -29,6 +46,7 @@ class CodeTemplate:
 
     @classmethod
     def code_block(cls, i18n_support: bool = False) -> str:
+
         return ''
 
 
@@ -533,17 +551,18 @@ CODE_BLOCKS = OrderedDict(
 )
 
 
-def generate_init(code_blocks: set[str], i18n_support: bool = False) -> str:
+def generate_init(title: str, code_blocks: set[str], i18n_support: bool = False) -> str:
     """Generate the content for the __init__.py file.
 
     Args:
+        title (str): Title of the plugin
         code_blocks (set[str]): Code blocks to include.
         i18n_support (bool, optional): Whether to include translation support in the template. Defaults to False.
 
     Returns:
         str: Content for the __init__.py file.
     """
-    includes = {'picard.plugin3.api': {'PluginApi'}}
+    includes = {'picard.plugin3.api': {'PluginApi'}}    # PluginApi is always included
     code_block = ""
     registration_block = (
         '\n\n'
@@ -608,8 +627,8 @@ def generate_init(code_blocks: set[str], i18n_support: bool = False) -> str:
 
     content = (
         '"""Picard 3 Plugin Framework"""\n\n'
-        '# Automatically generated using "Create Local Plugin"\n\n'
-    )
+        '# Automatically generated using "{title}"\n\n'
+    ).format(title=title)
     content += code_blocks_text + '\n' + _make_includes_block(includes) + code_block + registration_block
     content += (
         '\n\n'
@@ -621,6 +640,19 @@ def generate_init(code_blocks: set[str], i18n_support: bool = False) -> str:
 
 
 def _make_includes_block(includes: dict[str, set[str]]) -> str:
+    """Creates the 'includes' text block based on the items in the dictionary provided.
+    The output attempts to group and sort the included items by module name providing
+    the item to include.  Multiple items from the same module are shown sorted in a
+    tuple, with each item on a separate line.
+
+    Args:
+        includes (dict[str, set[str]]): Dictionary of items to include.  The key is the
+        module providing the included item, and the value is a set of the items to
+        include from the module.
+
+    Returns:
+        str: Text block of the includes for the plugin.
+    """
     includes_block = ''
     old_module = ''
     for key in sorted(includes.keys()):
