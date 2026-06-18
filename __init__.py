@@ -70,6 +70,7 @@ OPT_ROOT_DIRECTORY = 'root_directory'
 OPT_LICENSE = 'license'
 OPT_TRANSLATABLE = 'translatable'
 OPT_BASE_LANGUAGE = 'base_language'
+OPT_INITIALIZE_GIT = 'initialize_git'
 OPT_INITIAL_COMMIT = 'initial_commit'
 OPT_OPEN_DIRECTORY = 'open_dir_on_create'
 OPT_CATEGORIES = 'categories'
@@ -163,6 +164,9 @@ class CreatePluginOptionsPage(OptionsPage):
         for spdx_id, info in sorted(LICENSES.items(), key=lambda x: x[1]['name'].lower()):
             self.ui.plugin_license.addItem(self.api.tr(info['name']), spdx_id)
 
+        # Set up git initialization option toggle
+        self.ui.initialize_git_repo.toggled.connect(self.enable_git_options)
+
         # Set up the button connections
         self.ui.directory_browser.clicked.connect(self.select_plugin_directory)
         self.ui.button_create.clicked.connect(self.create_plugin)
@@ -179,7 +183,9 @@ class CreatePluginOptionsPage(OptionsPage):
         license_index = self.ui.plugin_license.findData(self.api.plugin_config[OPT_LICENSE])
         self.ui.plugin_license.setCurrentIndex(max(license_index, 0))
         self.ui.tx_enabled.setChecked(self.api.plugin_config[OPT_TRANSLATABLE])
+        self.ui.initialize_git_repo.setChecked(self.api.plugin_config[OPT_INITIALIZE_GIT])
         self.ui.enter_initial_commit.setChecked(self.api.plugin_config[OPT_INITIAL_COMMIT])
+        self.enable_git_options()
         self.ui.open_plugin_directory.setChecked(self.api.plugin_config[OPT_OPEN_DIRECTORY])
         base_locale = self.api.plugin_config[OPT_BASE_LANGUAGE]
         if not base_locale:
@@ -208,6 +214,14 @@ class CreatePluginOptionsPage(OptionsPage):
         self.api.plugin_config[OPT_OPEN_DIRECTORY] = self.ui.open_plugin_directory.isChecked()
         self.api.plugin_config[OPT_CATEGORIES] = self.get_categories_list()
         self.api.plugin_config[OPT_TEMPLATES] = self.selected_templates
+        self.api.plugin_config[OPT_INITIALIZE_GIT] = self.ui.initialize_git_repo.isChecked()
+
+    def enable_git_options(self) -> None:
+        """Enable or disable the git options based on the state of the initialize git checkbox.
+        """
+        enabled = self.ui.initialize_git_repo.isChecked()
+        self.ui.enter_initial_commit.setEnabled(enabled)
+        self.ui.enter_initial_commit.setVisible(enabled)
 
     def confirm_creation(self, plugin_name: str, plugin_dir: Path) -> bool:
         """Show a confirmation dialog before creating the plugin.
@@ -278,7 +292,7 @@ class CreatePluginOptionsPage(OptionsPage):
         output = PluginCreatorOutput(self.api)
         plugin_creator = PluginCLI(manager=None, args={}, output=output, parser=None)
 
-        initial_commit = self.ui.enter_initial_commit.isChecked()
+        initial_commit = self.ui.initialize_git_repo.isChecked() and self.ui.enter_initial_commit.isChecked()
         author = self.ui.plugin_author_name.text().strip()
         email = self.ui.plugin_author_email.text().strip()
         description = self.ui.plugin_description.toPlainText().strip()
@@ -510,7 +524,8 @@ def enable(api: PluginApi) -> None:
     api.plugin_config.register_option(OPT_ROOT_DIRECTORY, '')
     api.plugin_config.register_option(OPT_LICENSE, '')
     api.plugin_config.register_option(OPT_TRANSLATABLE, False)
-    api.plugin_config.register_option(OPT_INITIAL_COMMIT, True)
+    api.plugin_config.register_option(OPT_INITIALIZE_GIT, False)
+    api.plugin_config.register_option(OPT_INITIAL_COMMIT, False)
     api.plugin_config.register_option(OPT_BASE_LANGUAGE, '')
     api.plugin_config.register_option(OPT_OPEN_DIRECTORY, False)
     api.plugin_config.register_option(OPT_CATEGORIES, [])

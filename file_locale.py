@@ -47,7 +47,11 @@ def generate_locale(name: str, short_description: str, description: str, plugin_
         lines.append('"action.dialog.text" = "Action triggered"')
 
     if 'options' in plugin_types:
-        lines.append('"qt.PlaygroundOptionsPage.label.disclaimer" = "This is not a real plugin. It only exists to try the implementation of as much of Picard\'s plugin API as possible."')
+        lines.append('"opt.title.run_image_processor" = "Run image processor"')
+        lines.append(
+            '"qt.PlaygroundOptionsPage.label.disclaimer" = "This is not a real plugin. It only exists to try the implementation of as much of Picard\'s '
+            'plugin API as possible."'
+        )
         lines.append('"qt.PlaygroundOptionsPage.label.run_image_processor" = "Run image processor. This applies a sepia effect on all loaded cover images."')
         lines.append('"qt.PlaygroundOptionsPage.title.playground_options" = "API Playground options"')
 

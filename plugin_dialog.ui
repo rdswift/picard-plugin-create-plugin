@@ -231,14 +231,31 @@
     </layout>
    </item>
    <item>
-    <widget class="QCheckBox" name="enter_initial_commit">
-     <property name="toolTip">
-      <string>tooltip.enter_initial_commit</string>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <property name="topMargin">
+      <number>0</number>
      </property>
-     <property name="text">
-      <string>label.enter_initial_commit</string>
-     </property>
-    </widget>
+     <item>
+      <widget class="QCheckBox" name="initialize_git_repo">
+       <property name="toolTip">
+        <string>tooltip.initialize_git_repo</string>
+       </property>
+       <property name="text">
+        <string>label.initialize_git_repo</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="enter_initial_commit">
+       <property name="toolTip">
+        <string>tooltip.enter_initial_commit</string>
+       </property>
+       <property name="text">
+        <string>label.enter_initial_commit</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QCheckBox" name="open_plugin_directory">
@@ -470,6 +487,7 @@
   <tabstop>directory_browser</tabstop>
   <tabstop>plugin_license</tabstop>
   <tabstop>button_select_plugin_types</tabstop>
+  <tabstop>initialize_git_repo</tabstop>
   <tabstop>enter_initial_commit</tabstop>
   <tabstop>open_plugin_directory</tabstop>
   <tabstop>tx_enabled</tabstop>

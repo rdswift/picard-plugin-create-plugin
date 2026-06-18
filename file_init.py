@@ -37,26 +37,30 @@ Include = namedtuple('Include', ['module', 'name'])
 
 
 class CodeTemplate:
-    i18n_block: str = ''
-    registration_block: str = ''
+    i18n_support: bool = False
     includes: set[Include] = set()
 
     def __init__(self) -> None:
         pass
 
     @classmethod
-    def code_block(cls, i18n_support: bool = False) -> str:
-
+    def i18n_block(cls) -> str:
         return ''
+
+    @classmethod
+    def code_block(cls) -> str:
+        return ''
+
+    @classmethod
+    def registration_block(cls) -> str:
+        return ''
+
+    @classmethod
+    def set_i18n_support(cls, i18n_support: bool) -> None:
+        cls.i18n_support = i18n_support
 
 
 class CodeMetadata(CodeTemplate):
-    registration_block = (
-        '\n'
-        '    # Metadata processors\n'
-        '    api.register_album_metadata_processor(album_metadata_processor)\n'
-        '    api.register_track_metadata_processor(track_metadata_processor)\n'
-    )
     includes = {
         Include(module='picard.plugin3.api', name='Album'),
         Include(module='picard.plugin3.api', name='Metadata'),
@@ -65,7 +69,16 @@ class CodeMetadata(CodeTemplate):
     }
 
     @classmethod
-    def code_block(cls, i18n_support=False) -> str:
+    def registration_block(cls) -> str:
+        return (
+            '\n'
+            '    # Metadata processors\n'
+            '    api.register_album_metadata_processor(album_metadata_processor)\n'
+            '    api.register_track_metadata_processor(track_metadata_processor)\n'
+        )
+
+    @classmethod
+    def code_block(cls) -> str:
         return (
             '\n\n'
             'def album_metadata_processor(\n'
@@ -105,28 +118,31 @@ class CodeMetadata(CodeTemplate):
 
 
 class CodeAction(CodeTemplate):
-    registration_block = (
-        '\n'
-        '    # Menu actions\n'
-        '    api.register_album_action(MyAction)\n'
-        '    api.register_cluster_action(MyAction)\n'
-        '    api.register_clusterlist_action(MyAction)\n'
-        '    api.register_file_action(MyAction)\n'
-        '    api.register_track_action(MyAction)\n'
-        '    api.register_tools_menu_action(MyAction)\n'
-    )
     includes = {
         Include(module='PyQt6.QtWidgets', name='QMessageBox'),
         Include(module='picard.plugin3.api', name='BaseAction'),
     }
 
     @classmethod
-    def code_block(cls, i18n_support=False) -> str:
+    def registration_block(cls) -> str:
+        return (
+            '\n'
+            '    # Menu actions\n'
+            '    api.register_album_action(MyAction)\n'
+            '    api.register_cluster_action(MyAction)\n'
+            '    api.register_clusterlist_action(MyAction)\n'
+            '    api.register_file_action(MyAction)\n'
+            '    api.register_track_action(MyAction)\n'
+            '    api.register_tools_menu_action(MyAction)\n'
+        )
+
+    @classmethod
+    def code_block(cls) -> str:
         text = (
             '\n\n'
             'class MyAction(BaseAction):\n'
         )
-        if i18n_support:
+        if cls.i18n_support:
             text += '    TITLE = t_("action.title", "Plugin action")\n'
         else:
             text += '    TITLE = "Plugin action"\n'
@@ -140,7 +156,7 @@ class CodeAction(CodeTemplate):
             '        QMessageBox.information(\n'
             '            None,\n'
         )
-        if i18n_support:
+        if cls.i18n_support:
             text += (
                 '            self.api.tr("action.dialog.title", "Plugin action"),\n'
                 '            self.api.tr("action.dialog.text", "Action triggered"),\n'
@@ -155,17 +171,21 @@ class CodeAction(CodeTemplate):
 
 
 class CodeAlbumPostRemoval(CodeTemplate):
-    registration_block = (
-        '\n'
-        '    # Album post-removal processor\n'
-        '    api.register_album_post_removal_processor(album_post_removal_processor)\n'
-    )
     includes = {
         Include(module='picard.plugin3.api', name='Album'),
     }
 
     @classmethod
-    def code_block(cls, i18n_support=False) -> str:
+    def registration_block(cls) -> str:
+        text = (
+            '\n'
+            '    # Album post-removal processor\n'
+            '    api.register_album_post_removal_processor(album_post_removal_processor)\n'
+        )
+        return text
+
+    @classmethod
+    def code_block(cls) -> str:
         text = (
             '\n\n'
             'def album_post_removal_processor(api: PluginApi, album: Album):\n'
@@ -175,17 +195,21 @@ class CodeAlbumPostRemoval(CodeTemplate):
 
 
 class CodeFilePostLoad(CodeTemplate):
-    registration_block = (
-        '\n'
-        '    # File post-load processor\n'
-        '    api.register_file_post_load_processor(file_post_load_processor)\n'
-    )
     includes = {
         Include(module='picard.plugin3.api', name='File'),
     }
 
     @classmethod
-    def code_block(cls, i18n_support=False) -> str:
+    def registration_block(cls) -> str:
+        text = (
+            '\n'
+            '    # File post-load processor\n'
+            '    api.register_file_post_load_processor(file_post_load_processor)\n'
+        )
+        return text
+
+    @classmethod
+    def code_block(cls) -> str:
         text = (
             '\n\n'
             'def file_post_load_processor(api: PluginApi, file: File):\n'
@@ -195,20 +219,24 @@ class CodeFilePostLoad(CodeTemplate):
 
 
 class CodeFilePostAddToTrack(CodeTemplate):
-    registration_block = (
-        '\n'
-        '    # File post add to track processor\n'
-        '    api.register_file_post_addition_to_track_processor(\n'
-        '        file_post_addition_to_track_processor\n'
-        '    )\n'
-    )
     includes = {
         Include(module='picard.plugin3.api', name='File'),
         Include(module='picard.plugin3.api', name='Track'),
     }
 
     @classmethod
-    def code_block(cls, i18n_support=False) -> str:
+    def registration_block(cls) -> str:
+        text = (
+            '\n'
+            '    # File post add to track processor\n'
+            '    api.register_file_post_addition_to_track_processor(\n'
+            '        file_post_addition_to_track_processor\n'
+            '    )\n'
+        )
+        return text
+
+    @classmethod
+    def code_block(cls) -> str:
         text = (
             '\n\n'
             'def file_post_addition_to_track_processor(api: PluginApi, track: Track, file: File):\n'
@@ -218,20 +246,24 @@ class CodeFilePostAddToTrack(CodeTemplate):
 
 
 class CodeFilePostRemoveFromTrack(CodeTemplate):
-    registration_block = (
-        '\n'
-        '    # File post remove from track processor\n'
-        '    api.register_file_post_removal_from_track_processor(\n'
-        '        file_post_removal_from_track_processor\n'
-        '    )\n'
-    )
     includes = {
         Include(module='picard.plugin3.api', name='File'),
         Include(module='picard.plugin3.api', name='Track'),
     }
 
     @classmethod
-    def code_block(cls, i18n_support=False) -> str:
+    def registration_block(cls) -> str:
+        text = (
+            '\n'
+            '    # File post remove from track processor\n'
+            '    api.register_file_post_removal_from_track_processor(\n'
+            '        file_post_removal_from_track_processor\n'
+            '    )\n'
+        )
+        return text
+
+    @classmethod
+    def code_block(cls) -> str:
         text = (
             '\n\n'
             'def file_post_removal_from_track_processor(api: PluginApi, track: Track, file: File):\n'
@@ -241,17 +273,21 @@ class CodeFilePostRemoveFromTrack(CodeTemplate):
 
 
 class CodeFilePreSave(CodeTemplate):
-    registration_block = (
-        '\n'
-        '    # File pre-save processor\n'
-        '    api.register_file_pre_save_processor(file_pre_save_processor)\n'
-    )
     includes = {
         Include(module='picard.plugin3.api', name='File'),
     }
 
     @classmethod
-    def code_block(cls, i18n_support=False) -> str:
+    def registration_block(cls) -> str:
+        text = (
+            '\n'
+            '    # File pre-save processor\n'
+            '    api.register_file_pre_save_processor(file_pre_save_processor)\n'
+        )
+        return text
+
+    @classmethod
+    def code_block(cls) -> str:
         text = (
             '\n\n'
             'def file_pre_save_processor(api: PluginApi, file: File):\n'
@@ -261,17 +297,21 @@ class CodeFilePreSave(CodeTemplate):
 
 
 class CodeFilePostSave(CodeTemplate):
-    registration_block = (
-        '\n'
-        '    # File post-save processor\n'
-        '    api.register_file_post_save_processor(file_post_save_processor)\n'
-    )
     includes = {
         Include(module='picard.plugin3.api', name='File'),
     }
 
     @classmethod
-    def code_block(cls, i18n_support=False) -> str:
+    def registration_block(cls) -> str:
+        text = (
+            '\n'
+            '    # File post-save processor\n'
+            '    api.register_file_post_save_processor(file_post_save_processor)\n'
+        )
+        return text
+
+    @classmethod
+    def code_block(cls) -> str:
         text = (
             '\n\n'
             'def file_post_save_processor(api: PluginApi, file: File):\n'
@@ -281,20 +321,24 @@ class CodeFilePostSave(CodeTemplate):
 
 
 class CodeScriptFunctions(CodeTemplate):
-    registration_block = (
-        '\n'
-        '    # Scripting functions\n'
-        '    api.register_script_function(func_playground_version, "playground_version")\n'
-        '    api.register_script_function(func_playground_one_arg, "playground_one_arg")\n'
-        '    api.register_script_function(func_playground_two_args, "playground_two_args")\n'
-        '    api.register_script_function(func_playground_variadic, "playground_variadic")\n'
-    )
     includes = {
         Include(module='picard.plugin3.api', name='ScriptParser'),
     }
 
     @classmethod
-    def code_block(cls, i18n_support=False) -> str:
+    def registration_block(cls) -> str:
+        text = (
+            '\n'
+            '    # Scripting functions\n'
+            '    api.register_script_function(func_playground_version, "playground_version")\n'
+            '    api.register_script_function(func_playground_one_arg, "playground_one_arg")\n'
+            '    api.register_script_function(func_playground_two_args, "playground_two_args")\n'
+            '    api.register_script_function(func_playground_variadic, "playground_variadic")\n'
+        )
+        return text
+
+    @classmethod
+    def code_block(cls) -> str:
         text = (
             '\n\n'
             'def func_playground_version(parser: ScriptParser) -> str:\n'
@@ -321,32 +365,40 @@ class CodeScriptFunctions(CodeTemplate):
 
 
 class CodeScriptVariables(CodeTemplate):
-    registration_block = (
-        '\n'
-        '    # Scripting variables\n'
-        '    api.register_script_variable("playground", "Just a test tag / variable")\n'
-        '    api.register_script_variable("_playground", "Just a test variable")\n'
-    )
     includes = set()
 
     @classmethod
-    def code_block(cls, i18n_support=False) -> str:
+    def registration_block(cls) -> str:
+        text = (
+            '\n'
+            '    # Scripting variables\n'
+            '    api.register_script_variable("playground", "Just a test tag / variable")\n'
+            '    api.register_script_variable("_playground", "Just a test variable")\n'
+        )
+        return text
+
+    @classmethod
+    def code_block(cls) -> str:
         text = ''
         return text
 
 
 class CodeFileFormat(CodeTemplate):
-    registration_block = (
-        '\n'
-        '    # File formats\n'
-        '    api.register_format(MyFileFormat)\n'
-    )
     includes = {
         Include(module='picard.plugin3.api', name='File'),
     }
 
     @classmethod
-    def code_block(cls, i18n_support=False) -> str:
+    def registration_block(cls) -> str:
+        text = (
+            '\n'
+            '    # File formats\n'
+            '    api.register_format(MyFileFormat)\n'
+        )
+        return text
+
+    @classmethod
+    def code_block(cls) -> str:
         text = (
             'class MyFileFormat(File):\n'
             '    EXTENSIONS = [".txt"]\n'
@@ -369,15 +421,6 @@ class CodeFileFormat(CodeTemplate):
 
 
 class CodeOptionsPage(CodeTemplate):
-    registration_block = (
-        '\n'
-        '    # Settings\n'
-        '    api.plugin_config.register_option("run_image_processor", False)\n'
-        '    api.plugin_config.register_option("my_choice", MyChoices.OPT2)\n'
-        '\n'
-        '    # Option page\n'
-        '    api.register_options_page(MyOptionsPage)\n'
-    )
     includes = {
         Include(module='enum', name='Enum'),
         Include(module='enum', name='auto'),
@@ -386,7 +429,36 @@ class CodeOptionsPage(CodeTemplate):
     }
 
     @classmethod
-    def code_block(cls, i18n_support=False) -> str:
+    def registration_block(cls) -> str:
+        text = (
+            '\n'
+            '    # Settings\n'
+        )
+        if cls.i18n_support:
+            text += (
+                '    api.plugin_config.register_option(\n'
+                '        "run_image_processor",\n'
+                '        False,\n'
+                '        title=self.api.tr("opt.title.run_image_processor", "Run image processor"),\n'
+                '         in_profile=True,\n'
+                '    )\n'
+            )
+        else:
+            text += (
+                '    api.plugin_config.register_option("run_image_processor", False, title="Run image processor", in_profile=True)\n'
+            )
+        text += (
+            '    api.plugin_config.register_option("my_choice", MyChoices.OPT2)\n'
+            '\n'
+            '    api.logger.info(f"my_choice == {api.plugin_config[\'my_choice\']!r}")\n'
+            '\n'
+            '    # Option page\n'
+            '    api.register_options_page(MyOptionsPage)\n'
+        )
+        return text
+
+    @classmethod
+    def code_block(cls) -> str:
         text = (
             '\n\n'
             'class MyChoices(Enum):\n'
@@ -395,19 +467,24 @@ class CodeOptionsPage(CodeTemplate):
             '    OPT3 = auto()\n'
             '\n\n'
             'class MyOptionsPage(OptionsPage):\n'
+            '    # Identify the options managed by profiles, and the corresponding widgets to highlight.\n'
+            '    OPTIONS = {\n'
+            '        "run_image_processor": {"widgets": ["run_image_processor"]},\n'
+            '    }\n'
+            '\n'
             '    def __init__(self, parent=None):\n'
             '        super().__init__(parent)\n'
-            '        self._ui = Ui_PlaygroundOptionsPage()\n'
-            '        self._ui.setupUi(self)\n'
+            '        self.ui = Ui_PlaygroundOptionsPage()\n'
+            '        self.ui.setupUi(self)\n'
             '\n'
             '    def load(self):\n'
-            '        self._ui.run_image_processor.setChecked(\n'
+            '        self.ui.run_image_processor.setChecked(\n'
             '            bool(self.api.plugin_config["run_image_processor"])\n'
             '        )\n'
             '\n'
             '    def save(self):\n'
             '        self.api.plugin_config["run_image_processor"] = (\n'
-            '            self._ui.run_image_processor.isChecked()\n'
+            '            self.ui.run_image_processor.isChecked()\n'
             '        )\n'
         )
         return text
@@ -589,9 +666,10 @@ def generate_init(title: str, code_blocks: set[str], i18n_support: bool = False)
             code_blocks_text = "# Includes example code blocks:\n"
         code_blocks_text += f"#    * {api.tr(CODE_BLOCKS[key]['name'])}\n"
         generator: CodeTemplate = CODE_BLOCKS[key]['code_generator']
+        generator.set_i18n_support(i18n_support)
 
-        code_block += generator.code_block(i18n_support=i18n_support)
-        registration_block += generator.registration_block
+        code_block += generator.code_block()
+        registration_block += generator.registration_block()
         for include in generator.includes:
             if include.module not in includes:
                 includes[include.module] = set()
