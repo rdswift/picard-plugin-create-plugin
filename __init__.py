@@ -292,7 +292,8 @@ class CreatePluginOptionsPage(OptionsPage):
         output = PluginCreatorOutput(self.api)
         plugin_creator = PluginCLI(manager=None, args={}, output=output, parser=None)
 
-        initial_commit = self.ui.initialize_git_repo.isChecked() and self.ui.enter_initial_commit.isChecked()
+        git_init = self.ui.initialize_git_repo.isChecked()
+        initial_commit = git_init and self.ui.enter_initial_commit.isChecked()
         author = self.ui.plugin_author_name.text().strip()
         email = self.ui.plugin_author_email.text().strip()
         description = self.ui.plugin_description.toPlainText().strip()
@@ -331,6 +332,7 @@ class CreatePluginOptionsPage(OptionsPage):
         return_code = plugin_creator.create_plugin_project(
             project=project,
             target=plugin_directory,
+            git_initialization=git_init,
             git_commit=initial_commit,
         )
         if return_code != ExitCode.SUCCESS:

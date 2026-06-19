@@ -439,8 +439,8 @@ class CodeOptionsPage(CodeTemplate):
                 '    api.plugin_config.register_option(\n'
                 '        "run_image_processor",\n'
                 '        False,\n'
-                '        title=self.api.tr("opt.title.run_image_processor", "Run image processor"),\n'
-                '         in_profile=True,\n'
+                '        title=api.tr("opt.title.run_image_processor", "Run image processor"),\n'
+                '        in_profile=True,\n'
                 '    )\n'
             )
         else:
