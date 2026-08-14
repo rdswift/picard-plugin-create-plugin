@@ -5,3 +5,7 @@ This plugin assists in the creation of a local plugin by preparing the plugin fr
 Code examples for the generated files are based on the [playgound / testing plugin](https://git.sr.ht/~phw/picard-plugin-playground) by Philipp Wolfer.
 
 Please see the [User Guide](https://picard-plugins-user-guides.readthedocs.io/en/latest/create_plugin/user_guide.html) for more information.
+
+## Contributing
+
+Please see the [Contribution Guidelines for MusicBrainz Picard Plugins](https://github.com/metabrainz/picard-plugins-registry/blob/main/PLUGIN_CONTRIBUTING.md) on how to help with development of this plugin.
