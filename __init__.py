@@ -287,7 +287,7 @@ class CreatePluginOptionsPage(OptionsPage):
         err_message = ''
         title = self.api.tr(self.TITLE)
         output = PluginCreatorOutput(self.api)
-        plugin_creator = PluginCLI(manager=None, args={}, output=output, parser=None)
+        plugin_creator = PluginCLI(manager=None, args={}, output=output)
 
         git_init = self.ui.initialize_git_repo.isChecked()
         initial_commit = git_init and self.ui.enter_initial_commit.isChecked()
