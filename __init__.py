@@ -41,7 +41,7 @@ from picard.plugin3.cli import (
 )
 from picard.plugin3.init_templates import slugify_name
 from picard.plugin3.project_config import PluginProjectConfig
-from picard.util import open_local_path
+from picard.ui.util import open_local_path
 
 from .file_init import (
     CODE_BLOCKS,
